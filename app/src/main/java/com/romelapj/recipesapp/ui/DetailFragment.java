@@ -10,10 +10,15 @@ import android.view.ViewGroup;
 
 import com.romelapj.recipesapp.R;
 import com.romelapj.recipesapp.models.Recipe;
+import com.romelapj.recipesapp.models.Step;
 import com.romelapj.recipesapp.ui.adapters.GenericAdapterRecyclerView;
 import com.romelapj.recipesapp.ui.adapters.GenericItemModel;
 import com.romelapj.recipesapp.ui.adapters.ViewFactory;
 import com.romelapj.recipesapp.ui.views.IngredientsView;
+import com.romelapj.recipesapp.ui.views.StepView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DetailFragment extends Fragment {
 
@@ -31,16 +36,23 @@ public class DetailFragment extends Fragment {
     }
 
     private void populateRecyclerView() {
-        adapter.addItem(new GenericItemModel<>(recipe, 0));
+        List<Step> steps = recipe.getSteps();
+        int limit = steps.size();
+        List<GenericItemModel> items = new ArrayList<>(limit + 1);
+        items.add(new GenericItemModel<>(recipe, 0));
+        for (int i = 0; i < limit; i++) {
+            items.add(new GenericItemModel<>(steps.get(i), 1));
+        }
+        adapter.addItems(items);
     }
 
     private void initRecyclerView(View view) {
         RecyclerView recyclerViewRecipes = view.findViewById(R.id.recyclerView_recipe);
         recyclerViewRecipes.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new GenericAdapterRecyclerView(new ViewFactory<GenericAdapterRecyclerView.ItemView<Recipe>>() {
+        adapter = new GenericAdapterRecyclerView(new ViewFactory<GenericAdapterRecyclerView.ItemView<?>>() {
             @Override
-            public GenericAdapterRecyclerView.ItemView<Recipe> getView(ViewGroup parent, int viewType) {
-                return new IngredientsView(parent.getContext());
+            public GenericAdapterRecyclerView.ItemView<?> getView(ViewGroup parent, int viewType) {
+                return (viewType == 1) ? new StepView(parent.getContext()) : new IngredientsView(parent.getContext());
             }
         });
         recyclerViewRecipes.setAdapter(adapter);
