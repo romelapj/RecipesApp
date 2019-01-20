@@ -1,50 +1,48 @@
 package com.romelapj.recipesapp.ui.views;
 
 import android.content.Context;
-import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.romelapj.recipesapp.R;
 import com.romelapj.recipesapp.models.Recipe;
 import com.romelapj.recipesapp.ui.adapters.GenericAdapterRecyclerView;
 
-public class RecipeView extends CardView implements GenericAdapterRecyclerView.ItemView<Recipe> {
+public class IngredientsView extends FrameLayout implements GenericAdapterRecyclerView.ItemView<Recipe> {
 
     private TextView textView;
-    private Recipe itemRecipe;
 
-    public RecipeView(Context context) {
+    public IngredientsView(Context context) {
         super(context);
         init();
     }
 
-    public RecipeView(Context context, AttributeSet attrs) {
+    public IngredientsView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public RecipeView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public IngredientsView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
     public void init() {
-        LayoutInflater.from(getContext()).inflate(R.layout.item_recipe, this, true);
+        LayoutInflater.from(getContext()).inflate(R.layout.item_ingredients, this, true);
         MarginLayoutParams layoutParams = new MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(30, 15, 30, 15);
         setLayoutParams(layoutParams);
-        textView = findViewById(R.id.textView_name);
+        textView = findViewById(R.id.textView_ingredients);
     }
 
 
     @Override
     public void bind(Recipe item, int position) {
-        itemRecipe = item;
-        textView.setText(item.getName());
+        textView.setText(item.getIngredientsDisplay());
     }
 
     @Override
@@ -52,7 +50,7 @@ public class RecipeView extends CardView implements GenericAdapterRecyclerView.I
         findViewById(R.id.layout_container).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                onItemClickListener.onItemClicked(RecipeView.this);
+                onItemClickListener.onItemClicked(IngredientsView.this);
             }
         });
     }
@@ -64,7 +62,7 @@ public class RecipeView extends CardView implements GenericAdapterRecyclerView.I
 
     @Override
     public Recipe getData() {
-        return itemRecipe;
+        return null;
     }
 
 }
