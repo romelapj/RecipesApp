@@ -1,5 +1,6 @@
-package com.romelapj.recipesapp.ui;
+package com.romelapj.recipesapp.ui.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,7 +21,9 @@ import com.romelapj.recipesapp.ui.views.StepView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetailFragment extends Fragment {
+public class RecipeDetailFragment extends Fragment implements GenericAdapterRecyclerView.OnItemClickListener {
+
+    OnRecipeDetailInteractionListener listener;
 
     public Recipe recipe;
     GenericAdapterRecyclerView adapter;
@@ -52,21 +55,61 @@ public class DetailFragment extends Fragment {
         adapter = new GenericAdapterRecyclerView(new ViewFactory<GenericAdapterRecyclerView.ItemView<?>>() {
             @Override
             public GenericAdapterRecyclerView.ItemView<?> getView(ViewGroup parent, int viewType) {
-                return (viewType == 1) ? new StepView(parent.getContext()) : new IngredientsView(parent.getContext());
+                return (viewType == 1) ? getStepView() : new IngredientsView(parent.getContext());
             }
         });
         recyclerViewRecipes.setAdapter(adapter);
     }
 
-    public static DetailFragment newInstance(Recipe recipe) {
+    private GenericAdapterRecyclerView.ItemView<?> getStepView() {
+        StepView stepView = new StepView(getContext());
+        stepView.setItemClickListener(this);
+        return stepView;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnRecipeDetailInteractionListener) {
+            listener = (OnRecipeDetailInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+    public static RecipeDetailFragment newInstance(Recipe recipe) {
 
         Bundle args = new Bundle();
 
         args.putParcelable("recipe", recipe);
 
-        DetailFragment fragment = new DetailFragment();
+        RecipeDetailFragment fragment = new RecipeDetailFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onItemClicked(GenericAdapterRecyclerView.ItemView itemView) {
+        Object itemViewData = itemView.getData();
+        if (listener != null && itemViewData instanceof Step) {
+            listener.onStepSelected((Step) itemViewData);
+        }
+    }
+
+    @Override
+    public void onItemLongClicked(GenericAdapterRecyclerView.ItemView itemView) {
+
+    }
+
+    public interface OnRecipeDetailInteractionListener {
+        void onStepSelected(Step step);
     }
 
 }

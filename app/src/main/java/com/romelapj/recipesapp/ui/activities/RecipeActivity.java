@@ -8,9 +8,11 @@ import android.support.v7.widget.Toolbar;
 
 import com.romelapj.recipesapp.R;
 import com.romelapj.recipesapp.models.Recipe;
-import com.romelapj.recipesapp.ui.DetailFragment;
+import com.romelapj.recipesapp.models.Step;
+import com.romelapj.recipesapp.ui.fragments.RecipeDetailFragment;
+import com.romelapj.recipesapp.ui.fragments.StepFragment;
 
-public class RecipeActivity extends AppCompatActivity {
+public class RecipeActivity extends AppCompatActivity implements RecipeDetailFragment.OnRecipeDetailInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,9 +24,16 @@ public class RecipeActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Recipe recipe = getIntent().getParcelableExtra("recipe");
             getSupportActionBar().setTitle(recipe.getName());
-            Fragment detailFragment = DetailFragment.newInstance(recipe);
+            Fragment detailFragment = RecipeDetailFragment.newInstance(recipe);
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.add(R.id.layout_container, detailFragment).commit();
         }
+    }
+
+    @Override
+    public void onStepSelected(Step step) {
+        Fragment detailFragment = StepFragment.newInstance(step);
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.layout_container, detailFragment).commit();
     }
 }

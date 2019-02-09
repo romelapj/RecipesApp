@@ -1,8 +1,10 @@
 package com.romelapj.recipesapp.ui.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -41,7 +43,13 @@ public class MainActivity extends AppCompatActivity implements GenericAdapterRec
 
     private void initRecyclerView() {
         RecyclerView recyclerViewRecipes = findViewById(R.id.recyclerView_recipes);
-        recyclerViewRecipes.setLayoutManager(new LinearLayoutManager(this));
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            recyclerViewRecipes.setLayoutManager(new GridLayoutManager(this, 1));
+        }
+        else{
+            recyclerViewRecipes.setLayoutManager(new GridLayoutManager(this, 3));
+        }
+//        recyclerViewRecipes.setLayoutManager(new LinearLayoutManager(this));
         adapter = new GenericAdapterRecyclerView(new ViewFactory<GenericAdapterRecyclerView.ItemView<Recipe>>() {
             @Override
             public GenericAdapterRecyclerView.ItemView<Recipe> getView(ViewGroup parent, int viewType) {
