@@ -9,6 +9,9 @@ import java.util.List;
 
 public class Recipe implements Parcelable {
 
+    @SerializedName("id")
+    private int id;
+
     @SerializedName("name")
     private String name;
 
@@ -24,6 +27,7 @@ public class Recipe implements Parcelable {
     }
 
     protected Recipe(Parcel in) {
+        id = in.readInt();
         name = in.readString();
         ingredients = in.createTypedArrayList(Ingredient.CREATOR);
         steps = in.createTypedArrayList(Step.CREATOR);
@@ -31,6 +35,7 @@ public class Recipe implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
         dest.writeString(name);
         dest.writeTypedList(ingredients);
         dest.writeTypedList(steps);
@@ -63,6 +68,14 @@ public class Recipe implements Parcelable {
 
     public List<Step> getSteps() {
         return steps;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setSteps(List<Step> steps) {

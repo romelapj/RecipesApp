@@ -1,6 +1,9 @@
 package com.romelapj.recipesapp.ui.activities;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -9,11 +12,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.romelapj.recipesapp.BuildConfig;
 import com.romelapj.recipesapp.R;
+import com.romelapj.recipesapp.RecipeAppWidget;
 import com.romelapj.recipesapp.models.Recipe;
 import com.romelapj.recipesapp.models.Step;
 import com.romelapj.recipesapp.ui.adapters.GenericAdapterRecyclerView;
@@ -31,9 +39,14 @@ import static com.romelapj.recipesapp.ui.activities.RecipeDetailActivity.ARG_ITE
 
 public class RecipeListActivity extends AppCompatActivity implements GenericAdapterRecyclerView.OnItemClickListener {
 
+    public static final String WIDGET_ID = "ID";
+    public static final String WIDGET_TITLE = "WIDGET_TITLE";
+    public static final String WIDGET_CONTENT = "WIDGET_CONTENT";
+
     private boolean mTwoPane;
     private Recipe recipe;
-    GenericAdapterRecyclerView adapter;
+    private GenericAdapterRecyclerView adapter;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,12 +138,56 @@ public class RecipeListActivity extends AppCompatActivity implements GenericAdap
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.recipe_menu, menu);
+
+        sharedPreferences = getSharedPreferences(BuildConfig.APPLICATION_ID, MODE_PRIVATE);
+        if ((sharedPreferences.getInt("ID", -1) == recipe.getId())) {
+            menu.findItem(R.id.favorite_widget).setIcon(R.drawable.ic_widget);
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
+
+        if (id == R.id.favorite_widget) {
+            boolean isRecipeInWidget = (sharedPreferences.getInt(WIDGET_ID, -1) == recipe.getId());
+
+            if (isRecipeInWidget) {
+                sharedPreferences.edit()
+                        .remove(WIDGET_ID)
+                        .remove(WIDGET_TITLE)
+                        .remove(WIDGET_CONTENT)
+                        .apply();
+
+                item.setIcon(R.drawable.ic_widget_stroke);
+                Toast.makeText(this, R.string.removed, Toast.LENGTH_LONG).show();
+            } else {
+                sharedPreferences
+                        .edit()
+                        .putInt(WIDGET_ID, recipe.getId())
+                        .putString(WIDGET_TITLE, recipe.getName())
+                        .putString(WIDGET_CONTENT, recipe.getIngredientsDisplay())
+                        .apply();
+
+                item.setIcon(R.drawable.ic_widget);
+                Toast.makeText(this, R.string.added, Toast.LENGTH_LONG).show();
+            }
+
+            ComponentName provider = new ComponentName(this, RecipeAppWidget.class);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+            int[] ids = appWidgetManager.getAppWidgetIds(provider);
+            RecipeAppWidget recipeAppWidgetProvider = new RecipeAppWidget();
+            recipeAppWidgetProvider.onUpdate(this, appWidgetManager, ids);
+        } else if (id == android.R.id.home) {
             onBackPressed();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
+
 }
