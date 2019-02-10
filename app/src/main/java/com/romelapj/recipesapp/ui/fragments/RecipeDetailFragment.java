@@ -1,115 +1,90 @@
 package com.romelapj.recipesapp.ui.fragments;
 
-import android.content.Context;
+import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.romelapj.recipesapp.R;
-import com.romelapj.recipesapp.models.Recipe;
 import com.romelapj.recipesapp.models.Step;
-import com.romelapj.recipesapp.ui.adapters.GenericAdapterRecyclerView;
-import com.romelapj.recipesapp.ui.adapters.GenericItemModel;
-import com.romelapj.recipesapp.ui.adapters.ViewFactory;
-import com.romelapj.recipesapp.ui.views.IngredientsView;
-import com.romelapj.recipesapp.ui.views.StepView;
 
-import java.util.ArrayList;
-import java.util.List;
+public class RecipeDetailFragment extends Fragment {
 
-public class RecipeDetailFragment extends Fragment implements GenericAdapterRecyclerView.OnItemClickListener {
+    public static final String ARG_ITEM_STEP = "item_step";
 
-    OnRecipeDetailInteractionListener listener;
+    private Step mItem;
+    private SimpleExoPlayer player;
+    private SimpleExoPlayerView simpleExoPlayerView;
+    private BandwidthMeter bandwidthMeter;
+    private TextView recipeDetail;
 
-    public Recipe recipe;
-    GenericAdapterRecyclerView adapter;
+    public RecipeDetailFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (getArguments().containsKey(ARG_ITEM_STEP)) {
+            mItem = getArguments().getParcelable(ARG_ITEM_STEP);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        recipe = getArguments().getParcelable("recipe");
-        View view = inflater.inflate(R.layout.fragment_detail, container, false);
-        initRecyclerView(view);
-        populateRecyclerView();
-        return view;
-    }
+        View rootView = inflater.inflate(R.layout.recipe_detail, container, false);
 
-    private void populateRecyclerView() {
-        List<Step> steps = recipe.getSteps();
-        int limit = steps.size();
-        List<GenericItemModel> items = new ArrayList<>(limit + 1);
-        items.add(new GenericItemModel<>(recipe, 0));
-        for (int i = 0; i < limit; i++) {
-            items.add(new GenericItemModel<>(steps.get(i), 1));
+        simpleExoPlayerView = rootView.findViewById(R.id.video_view);
+        bandwidthMeter = new DefaultBandwidthMeter();
+        TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
+        TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+        recipeDetail = rootView.findViewById(R.id.recipe_detail);
+
+        LoadControl loadControl = new DefaultLoadControl();
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
+
+        if (mItem != null) {
+            recipeDetail.setText(mItem.getDescription());
         }
-        adapter.addItems(items);
-    }
 
-    private void initRecyclerView(View view) {
-        RecyclerView recyclerViewRecipes = view.findViewById(R.id.recyclerView_recipe);
-        recyclerViewRecipes.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new GenericAdapterRecyclerView(new ViewFactory<GenericAdapterRecyclerView.ItemView<?>>() {
-            @Override
-            public GenericAdapterRecyclerView.ItemView<?> getView(ViewGroup parent, int viewType) {
-                return (viewType == 1) ? getStepView() : new IngredientsView(parent.getContext());
-            }
-        });
-        recyclerViewRecipes.setAdapter(adapter);
-    }
-
-    private GenericAdapterRecyclerView.ItemView<?> getStepView() {
-        StepView stepView = new StepView(getContext());
-        stepView.setItemClickListener(this);
-        return stepView;
+        return rootView;
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnRecipeDetailInteractionListener) {
-            listener = (OnRecipeDetailInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+    public void onResume() {
+        super.onResume();
+
+        simpleExoPlayerView.requestFocus();
+        simpleExoPlayerView.setPlayer(player);
+        DefaultHttpDataSourceFactory recipe = new DefaultHttpDataSourceFactory(Util.getUserAgent(getContext(), "recipe"));
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(recipe).createMediaSource(Uri.parse(mItem.getVideoURL()));
+        player.prepare(mediaSource);
+        player.setPlayWhenReady(true);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            recipeDetail.setVisibility(View.GONE);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         }
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    public static RecipeDetailFragment newInstance(Recipe recipe) {
-
-        Bundle args = new Bundle();
-
-        args.putParcelable("recipe", recipe);
-
-        RecipeDetailFragment fragment = new RecipeDetailFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onItemClicked(GenericAdapterRecyclerView.ItemView itemView) {
-        Object itemViewData = itemView.getData();
-        if (listener != null && itemViewData instanceof Step) {
-            listener.onStepSelected((Step) itemViewData);
-        }
-    }
-
-    @Override
-    public void onItemLongClicked(GenericAdapterRecyclerView.ItemView itemView) {
-
-    }
-
-    public interface OnRecipeDetailInteractionListener {
-        void onStepSelected(Step step);
-    }
-
 }
