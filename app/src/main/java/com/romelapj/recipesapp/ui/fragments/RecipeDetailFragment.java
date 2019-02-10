@@ -92,4 +92,12 @@ public class RecipeDetailFragment extends Fragment {
             ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         }
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        player.stop();
+        player.release();
+        player = null;
+    }
 }

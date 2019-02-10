@@ -19,6 +19,43 @@ public class Step implements Parcelable {
     @SerializedName("thumbnailURL")
     private String thumbnailURL;
 
+    @SerializedName("id")
+    private String id;
+
+    protected Step(Parcel in) {
+        shortDescription = in.readString();
+        description = in.readString();
+        videoURL = in.readString();
+        thumbnailURL = in.readString();
+        id = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(shortDescription);
+        dest.writeString(description);
+        dest.writeString(videoURL);
+        dest.writeString(thumbnailURL);
+        dest.writeString(id);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Step> CREATOR = new Creator<Step>() {
+        @Override
+        public Step createFromParcel(Parcel in) {
+            return new Step(in);
+        }
+
+        @Override
+        public Step[] newArray(int size) {
+            return new Step[size];
+        }
+    };
+
     public String getShortDescription() {
         return shortDescription;
     }
@@ -51,18 +88,12 @@ public class Step implements Parcelable {
         this.thumbnailURL = thumbnailURL;
     }
 
-
-    @Override
-    public int describeContents() {
-        return 0;
+    public String getId() {
+        return id;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.shortDescription);
-        dest.writeString(this.description);
-        dest.writeString(this.videoURL);
-        dest.writeString(this.thumbnailURL);
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Step(String shortDescription, String description, String videoURL, String thumbnailURL) {
@@ -75,22 +106,4 @@ public class Step implements Parcelable {
     public Step() {
     }
 
-    protected Step(Parcel in) {
-        this.shortDescription = in.readString();
-        this.description = in.readString();
-        this.videoURL = in.readString();
-        this.thumbnailURL = in.readString();
-    }
-
-    public static final Parcelable.Creator<Step> CREATOR = new Parcelable.Creator<Step>() {
-        @Override
-        public Step createFromParcel(Parcel source) {
-            return new Step(source);
-        }
-
-        @Override
-        public Step[] newArray(int size) {
-            return new Step[size];
-        }
-    };
 }

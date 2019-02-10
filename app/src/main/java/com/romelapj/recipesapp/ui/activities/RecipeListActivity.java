@@ -2,6 +2,7 @@ package com.romelapj.recipesapp.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,9 @@ import com.romelapj.recipesapp.ui.views.StepView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.romelapj.recipesapp.ui.activities.RecipeDetailActivity.ARG_ITEM_STEPS;
+import static com.romelapj.recipesapp.ui.activities.RecipeDetailActivity.ARG_ITEM_STEP_ID;
 
 public class RecipeListActivity extends AppCompatActivity implements GenericAdapterRecyclerView.OnItemClickListener {
 
@@ -108,7 +112,8 @@ public class RecipeListActivity extends AppCompatActivity implements GenericAdap
                         .commit();
             } else {
                 Intent intent = new Intent(this, RecipeDetailActivity.class);
-                intent.putExtra(RecipeDetailFragment.ARG_ITEM_STEP, itemViewData);
+                intent.putExtra(ARG_ITEM_STEP_ID, itemViewData.getId());
+                intent.putParcelableArrayListExtra(ARG_ITEM_STEPS, (ArrayList<? extends Parcelable>) recipe.getSteps());
 
                 startActivity(intent);
             }
