@@ -36,7 +36,9 @@ public class RecipeDetailFragment extends Fragment {
     private SimpleExoPlayer player;
     private SimpleExoPlayerView simpleExoPlayerView;
     private BandwidthMeter bandwidthMeter;
-    private TextView recipeDetail;
+    private View recipeDetail;
+    private TextView title;
+    private TextView description;
 
     public RecipeDetailFragment() {
     }
@@ -60,12 +62,15 @@ public class RecipeDetailFragment extends Fragment {
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         recipeDetail = rootView.findViewById(R.id.recipe_detail);
+        title = rootView.findViewById(R.id.titleTextView);
+        description = rootView.findViewById(R.id.descriptionTextView);
 
         LoadControl loadControl = new DefaultLoadControl();
         player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
 
         if (mItem != null) {
-            recipeDetail.setText(mItem.getDescription());
+            title.setText(mItem.getShortDescription());
+            description.setText(mItem.getDescription());
         }
 
         return rootView;
