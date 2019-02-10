@@ -3,10 +3,12 @@ package com.romelapj.recipesapp.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,14 +38,20 @@ public class RecipeListActivity extends AppCompatActivity implements GenericAdap
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
 
         if (findViewById(R.id.recipe_detail_container) != null) {
             mTwoPane = true;
         }
 
         recipe = getIntent().getParcelableExtra("recipe");
+
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(recipe.getName());
+        }
+
 
         View recyclerView = findViewById(R.id.recipe_list);
         assert recyclerView != null;
@@ -109,5 +117,15 @@ public class RecipeListActivity extends AppCompatActivity implements GenericAdap
 
     @Override
     public void onItemLongClicked(GenericAdapterRecyclerView.ItemView itemView) {
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
